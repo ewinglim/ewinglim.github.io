@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One framework, four titles, eighteen days — case study | Ewe Win Lim</title>
+<meta name="description" content="How a shared Unity framework put four distinct games on the store between 21 August and 8 September 2026 — and what the bet cost.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../css/style.css">
+<style>:root { --card-accent: #7aa2f7; }</style>
+<script>document.documentElement.classList.add("js")</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html">Ewe Win Lim <span>/ Ewing</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu">
+      <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="../index.html#work">Work</a>
+      <a href="../index.html#studies" aria-current="page">Case studies</a>
+      <a href="../index.html#engineering">Engineering</a>
+      <a href="../index.html#about">About</a>
+      <a class="btn nav-cta" href="../index.html#contact">Get in touch</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="study-hero">
+    <div class="wrap">
+      <a class="crumb" href="../index.html#studies">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>
+        All case studies
+      </a>
+
+      <div class="study-hero-top">
+        <img src="../assets/games/heroes-of-etheria/icon.jpg" alt="" width="256" height="256">
+        <div>
+          <p class="role">Gempak Games · Technical direction</p>
+          <h1>One framework, four titles, eighteen days</h1>
+        </div>
+      </div>
+
+      <p class="lede">
+        Between 21 August and 8 September 2026, four distinct games went live on Google
+        Play: <strong>Protect the Wall NOW</strong>, <strong>Ether Defenders</strong>,
+        <strong>Ether Survivors</strong> and <strong>Ether Trinity</strong>. Different
+        genres, different loops, one shared codebase — grown out of
+        <strong>Heroes of Etheria</strong>, which shipped that July. This is the
+        architecture that made it possible, and the places the bet cost us.
+      </p>
+
+      <dl class="factbar">
+        <div><dt>Titles shipped</dt><dd>4 in 18 days</dd></div>
+        <div><dt>Window</dt><dd>21 Aug – 8 Sep 2026</dd></div>
+        <div><dt>Genres</dt><dd>TD · survivor · boss rush</dd></div>
+        <div><dt>Engine</dt><dd>Unity · URP</dd></div>
+        <div><dt>My role</dt><dd>Technical direction</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="section">
+    <div class="wrap study-layout">
+
+      <aside class="study-aside">
+        <div class="side-card">
+          <h3>On this page</h3>
+          <ul class="toc">
+            <li><a href="#situation">The situation</a></li>
+            <li><a href="#bet">The bet</a></li>
+            <li><a href="#core">What went in the core</a></li>
+            <li><a href="#composition">Composition over inheritance</a></li>
+            <li><a href="#liveops">Shared live-ops</a></li>
+            <li><a href="#cost">What it cost</a></li>
+            <li><a href="#again">What I'd do again</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+          </ul>
+        </div>
+        <div class="side-card">
+          <h3>Shipped from this core</h3>
+          <ul class="tags">
+            <li>Heroes of Etheria</li><li>Protect the Wall NOW</li>
+            <li>Ether Defenders</li><li>Ether Survivors</li><li>Ether Trinity</li>
+          </ul>
+        </div>
+        <a class="btn" href="https://play.google.com/store/apps/details?id=com.gempakgames.heroesofetheria" target="_blank" rel="noopener">
+          Heroes of Etheria on Play
+        </a>
+      </aside>
+
+      <article class="study-content">
+
+        <section id="situation">
+          <h2>The situation</h2>
+          <p>
+            A small studio testing several game concepts at once has one honest constraint:
+            <strong>the number of titles you can put in front of players per quarter is your
+            learning rate.</strong> Ship one game and you learn one thing. The market decides
+            faster than any amount of internal deliberation.
+          </p>
+          <p>
+            The naive way to ship four games is to build four games. With a team our size that
+            means four shallow codebases, four sets of the same bugs, and four separate
+            analytics integrations that report subtly different numbers.
+          </p>
+          <p>
+            <strong>Heroes of Etheria</strong> shipped in July 2026 and gave us the raw
+            material for a different approach. It already contained the pieces every one of
+            our concepts needed — heroes with abilities, waves of enemies, a run-based
+            progression loop, remote-configurable balance — because it ran three quite
+            different modes off one dataset: saga campaign, endless survival, and farming runs.
+          </p>
+        </section>
+
+        <section id="bet">
+          <h2>The bet</h2>
+          <p>
+            Rather than fork Heroes of Etheria per concept, we extracted the parts that were
+            genuinely common into a shared core, and made each title a thin composition on top.
+            The wager: <strong>pay an up-front extraction cost, then get each subsequent title
+            for a fraction of the work.</strong>
+          </p>
+
+          <blockquote class="callout">
+            <span class="label">The decision rule</span>
+            <p>
+              A system goes in the core only when at least two shipping titles need it and
+              their needs already agree. Anticipated commonality is not commonality — it's how
+              you end up with a framework that fits nothing.
+            </p>
+          </blockquote>
+
+          <p>
+            That rule mattered more than any technical choice. The failure mode of shared
+            frameworks isn't that the code is bad, it's that someone generalises a system
+            before there's evidence about what varies. So the core started deliberately small
+            and grew only on the second real demand.
+          </p>
+        </section>
+
+        <section id="core">
+          <h2>What went in the core</h2>
+          <p>
+            Four titles with different loops turn out to share almost all of their
+            infrastructure and very little of their gameplay:
+          </p>
+          <ul>
+            <li>
+              <strong>Hero and ability model.</strong> Stats, status effects, cooldowns,
+              targeting. All four titles have heroes with abilities; only the firing rules differ.
+            </li>
+            <li>
+              <strong>Enemy and wave definitions.</strong> A wave director reading authored
+              data. A tower defence wave, a survivor horde and a boss phase are the same
+              structure with different parameters.
+            </li>
+            <li>
+              <strong>Run-based progression.</strong> Start a run, accumulate power, end, bank
+              meta-currency. Identical in all four.
+            </li>
+            <li>
+              <strong>Economy and IAP.</strong> Currencies, shop, receipt validation, reward
+              granting — pure infrastructure, zero genre specificity.
+            </li>
+            <li>
+              <strong>Analytics and remote config.</strong> One instrumentation layer, so a
+              funnel means the same thing in every title and they can be compared honestly.
+            </li>
+            <li>
+              <strong>Boot, save, settings, localisation.</strong> The unglamorous 20% of every
+              project that we stopped rewriting.
+            </li>
+          </ul>
+          <p>
+            What stayed out was the part that makes each game itself: the control scheme,
+            board or arena layout, the moment-to-moment loop, the specific mechanic. Merge in
+            Ether Defenders. Boons in Protect the Wall NOW. Rune socketing in Ether Survivors.
+            Hero swapping in Ether Trinity. Those are per-title code, and keeping them out of
+            the core is exactly why the core survived.
+          </p>
+        </section>
+
+        <section id="composition">
+          <h2>Composition over inheritance</h2>
+          <p>
+            The obvious structure is a base <code>GameMode</code> class each title inherits.
+            We'd already been bitten by that shape: it collects flags, and every new title adds
+            a branch to a method three titles don't care about.
+          </p>
+          <p>
+            Instead, a title <strong>assembles</strong> the services it needs and supplies its
+            own rules. No inheritance chain, no base class knowing about its subclasses, and
+            each title's entry point reads as an inventory of what that game actually is.
+          </p>
+
+          <p class="code-label">Shape of a title's entry point</p>
+<pre><code>// Each title composes the core rather than extending it.
+public sealed class EtherDefendersGame : IGameLoop
+{
+    private readonly IWaveDirector   _waves;    // core
+    private readonly IHeroRoster     _heroes;   // core
+    private readonly IEconomy        _economy;  // core
+    private readonly MergeBoardRules _rules;    // this title only
+
+    public void Tick(float dt)
+    {
+        _waves.Tick(dt);
+        _rules.ResolveMerges(_heroes.OnBoard);
+    }
+}</code></pre>
+
+          <p>
+            The practical test of whether this worked: <strong>could a title change its core
+            behaviour without touching another title?</strong> With composition, yes — a game
+            swaps its own rules object. With a shared base class, that same change is a branch
+            in code four games execute.
+          </p>
+
+          <div class="draft-note">
+            <span class="label">Draft — worth naming precisely</span>
+            <p>
+              If you used Unity's assembly definitions to enforce the core/title boundary
+              (so a title physically cannot reference another title's code), say so — it's a
+              strong signal that the architecture was enforced rather than merely intended.
+              Same for any DI container or service locator you standardised on.
+            </p>
+          </div>
+        </section>
+
+        <section id="liveops">
+          <h2>Shared live-ops</h2>
+          <p>
+            The under-appreciated dividend wasn't development speed, it was operations. One
+            analytics schema across four titles means the day-one retention number in one game
+            is directly comparable to another — so <strong>the portfolio itself becomes the
+            experiment.</strong> Four concepts in market, measured identically, is a far
+            sharper signal than four incomparable dashboards.
+          </p>
+          <p>
+            One remote config layer also meant balance changes shipped without store
+            submissions, in every title, through the same mechanism. Four separate
+            implementations of that would have been four separate sets of edge cases in the
+            worst possible place to have them: live, in front of players.
+          </p>
+
+          <div class="draft-note">
+            <span class="label">Draft — add what the data said</span>
+            <p>
+              If comparing the four titles' funnels changed a decision — killed a concept,
+              redirected effort, revealed one loop retained better than expected — that story
+              is the strongest thing on this page. It shows the architecture served a business
+              purpose, not just a tidy repo.
+            </p>
+          </div>
+        </section>
+
+        <section id="cost">
+          <h2>What it cost</h2>
+          <p>
+            An honest account, because a case study that only reports wins isn't an engineering
+            document:
+          </p>
+          <ul>
+            <li>
+              <strong>Coupling risk is real.</strong> A core change touches four shipping
+              titles. That demands discipline the schedule doesn't always allow — and it means
+              a subtle regression can quadruple in blast radius.
+            </li>
+            <li>
+              <strong>Genre pull on the core.</strong> Each title arrived with one feature that
+              <em>nearly</em> belonged in the core. Saying no repeatedly is exhausting, and I
+              said yes at least once I shouldn't have.
+            </li>
+            <li>
+              <strong>Four titles in eighteen days compresses QA.</strong> The framework
+              removed engineering time, not testing time. Overlapping launch windows was the
+              riskiest part of the whole exercise and the part I'd plan differently.
+            </li>
+            <li>
+              <strong>Shared code makes divergence expensive later.</strong> If one title finds
+              an audience and needs to go deep, it eventually wants out of the shared core.
+              That exit cost is a debt the approach quietly takes on.
+            </li>
+          </ul>
+        </section>
+
+        <section id="again">
+          <h2>What I'd do again</h2>
+          <ol>
+            <li>
+              <strong>Extract from a shipped game, not from a design document.</strong> The
+              core worked because it was distilled from something that already ran in
+              production and had real players.
+            </li>
+            <li>
+              <strong>Hold the two-titles rule.</strong> Every system I generalised on
+              speculation was wrong about what would vary. Every system I extracted on the
+              second real demand was right.
+            </li>
+            <li>
+              <strong>Invest in the boring layer first.</strong> Save, boot, config, analytics.
+              It's the least interesting code to write and it's what actually compounds across
+              a slate.
+            </li>
+            <li>
+              <strong>Stagger the launches.</strong> The framework earned the throughput; I
+              spent it badly by clustering four submissions into three weeks.
+            </li>
+          </ol>
+        </section>
+
+        <section id="gallery">
+          <h2>Gallery</h2>
+          <p>Heroes of Etheria — the title the shared core was extracted from.</p>
+          <ul class="shots">
+            <li><img src="../assets/games/heroes-of-etheria/01.jpg" alt="Heroes of Etheria boss fight" loading="lazy"></li>
+            <li><img src="../assets/games/heroes-of-etheria/02.jpg" alt="Tower defence wave in progress" loading="lazy"></li>
+            <li><img src="../assets/games/heroes-of-etheria/03.jpg" alt="Hero roster screen" loading="lazy"></li>
+            <li><img src="../assets/games/heroes-of-etheria/04.jpg" alt="Campaign world map" loading="lazy"></li>
+          </ul>
+          <p style="margin-top:1.5rem">Three of the four titles that shipped from it.</p>
+          <ul class="shots">
+            <li><img src="../assets/games/ether-defenders/02.jpg" alt="Ether Defenders hero placement" loading="lazy"></li>
+            <li><img src="../assets/games/protect-the-wall-now/02.jpg" alt="Protect the Wall NOW boon selection" loading="lazy"></li>
+            <li><img src="../assets/games/ether-trinity/02.jpg" alt="Ether Trinity boss arena" loading="lazy"></li>
+          </ul>
+        </section>
+
+        <div class="next-study">
+          <p>
+            <strong>500 parts, one designer, no programmer in the loop</strong>
+            Editor tooling and experimentation on a 100K-install title.
+          </p>
+          <a class="btn btn--primary" href="gun-builder-elite-2.html">
+            Next case study
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+
+      </article>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cta">
+      <p class="eyebrow">Contact</p>
+      <h2>Want the longer version?</h2>
+      <p>Happy to talk through the extraction process, or where I'd draw the boundary differently now.</p>
+      <ul class="contact-list">
+        <li><a class="btn btn--primary" href="mailto:ewewin1995@hotmail.com">ewewin1995@hotmail.com</a></li>
+        <li><a class="btn" href="../index.html#work">All work</a></li>
+      </ul>
+    </div>
+    <div class="footer-base">
+      <p>&copy; <span data-year>2026</span> Ewe Win Lim · Kuala Lumpur, Malaysia</p>
+      <p><a href="../index.html">Back to portfolio</a></p>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js" defer></script>
+</body>
+</html>

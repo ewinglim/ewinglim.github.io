@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gun Builder ELITE 2 — case study | Ewe Win Lim</title>
+<meta name="description" content="500+ interchangeable parts, an A/B framework the design team ran unaided, and an art pipeline that took a programmer out of the loop. 100K+ installs.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../css/style.css">
+<style>:root { --card-accent: #8ab0d0; }</style>
+<script>document.documentElement.classList.add("js")</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html">Ewe Win Lim <span>/ Ewing</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu">
+      <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="../index.html#work">Work</a>
+      <a href="../index.html#studies" aria-current="page">Case studies</a>
+      <a href="../index.html#engineering">Engineering</a>
+      <a href="../index.html#about">About</a>
+      <a class="btn nav-cta" href="../index.html#contact">Get in touch</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="study-hero">
+    <div class="wrap">
+      <a class="crumb" href="../index.html#studies">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>
+        All case studies
+      </a>
+
+      <div class="study-hero-top">
+        <img src="../assets/games/gun-builder-elite-2/icon.jpg" alt="" width="256" height="256">
+        <div>
+          <p class="role">Lifebelt Games · Unity Developer</p>
+          <h1>Gun Builder ELITE 2</h1>
+        </div>
+      </div>
+
+      <p class="lede">
+        A 3D weapon simulator assembled from <strong>over 500 interchangeable parts</strong>,
+        with 100K+ installs and a 4.4-star average across 2,300 ratings. The gameplay is
+        assembly and inspection; the engineering is a compatibility graph, an
+        experimentation harness, and an art pipeline that let content ship without a
+        programmer touching it.
+      </p>
+
+      <dl class="factbar">
+        <div><dt>Platform</dt><dd>iOS &amp; Android</dd></div>
+        <div><dt>Installs</dt><dd>100,000+</dd></div>
+        <div><dt>Rating</dt><dd>4.4&#9733; · 2.3K ratings</dd></div>
+        <div><dt>Parts</dt><dd>500+</dd></div>
+        <div><dt>My role</dt><dd>Systems, tooling, experimentation</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="section">
+    <div class="wrap study-layout">
+
+      <aside class="study-aside">
+        <div class="side-card">
+          <h3>On this page</h3>
+          <ul class="toc">
+            <li><a href="#problem">The problem with 500 parts</a></li>
+            <li><a href="#graph">The compatibility graph</a></li>
+            <li><a href="#pipeline">Taking myself out of the loop</a></li>
+            <li><a href="#ab">An A/B harness design could drive</a></li>
+            <li><a href="#scale">What 100K installs teaches you</a></li>
+            <li><a href="#tradeoffs">Trade-offs &amp; regrets</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+          </ul>
+        </div>
+        <div class="side-card">
+          <h3>Stack</h3>
+          <ul class="tags">
+            <li>Unity</li><li>C#</li><li>Editor tooling</li><li>ScriptableObjects</li>
+            <li>Remote config</li><li>Analytics</li><li>IAP</li><li>iOS</li><li>Android</li>
+          </ul>
+        </div>
+        <div style="display:grid;gap:.6rem">
+          <a class="btn" href="https://play.google.com/store/apps/details?id=life.belt.gbe2" target="_blank" rel="noopener">Google Play</a>
+          <a class="btn" href="https://apps.apple.com/us/app/gun-builder-elite-2/id6447168170" target="_blank" rel="noopener">App Store</a>
+        </div>
+      </aside>
+
+      <article class="study-content">
+
+        <section id="problem">
+          <h2>The problem with 500 parts</h2>
+          <p>
+            "Build a gun from any combination of parts" sounds like a content problem. It is
+            really a <strong>combinatorics problem wearing a content problem's clothes</strong>.
+            Five hundred parts across a handful of mount categories produce more valid
+            configurations than anyone will ever hand-check, and every one of them has to
+            look right, mount at the correct offset, and not clip through its neighbours.
+          </p>
+          <p>Three failure modes made themselves obvious early:</p>
+          <ul>
+            <li>
+              <strong>Silent visual breakage.</strong> A part mounts, but a millimetre off, and
+              nobody notices until a player posts a screenshot.
+            </li>
+            <li>
+              <strong>Content throughput bottlenecked on engineering.</strong> If adding a part
+              needs a programmer, the content roadmap runs at programmer speed.
+            </li>
+            <li>
+              <strong>Untestable monetisation.</strong> With this much content, guessing which
+              parts to gate, bundle or price is guessing with the studio's revenue.
+            </li>
+          </ul>
+          <p>Each one got a system rather than a process.</p>
+        </section>
+
+        <section id="graph">
+          <h2>The compatibility graph</h2>
+          <p>
+            Rather than encode compatibility as rules in code, every part declares its own
+            mount points and what it accepts. Compatibility becomes a graph the tooling can
+            traverse — which means it can be <strong>validated at author time</strong> instead
+            of discovered at runtime.
+          </p>
+
+          <p class="code-label">Shape of the data</p>
+<pre><code>[CreateAssetMenu(menuName = "GBE/Weapon Part")]
+public sealed class WeaponPart : ScriptableObject
+{
+    public PartCategory Category;      // receiver, barrel, optic, grip...
+    public MountSocket[] Provides;     // sockets this part exposes
+    public PartCategory[] Accepts;     // what may attach to them
+    public Vector3 GripOffset;         // authored, not guessed
+
+    // Editor-only: runs in the pre-build validation pass.
+    public bool Validate(out string error) { /* ... */ }
+}</code></pre>
+
+          <p>
+            The payoff isn't the data structure, it's what it unlocks. Because the graph is
+            queryable, the build can enumerate every reachable configuration and assert that
+            each one resolves — no orphan sockets, no category that accepts nothing, no part
+            with a missing offset. A malformed part <strong>fails the build</strong> rather
+            than shipping and generating a support ticket.
+          </p>
+
+          <blockquote class="callout">
+            <span class="label">The general lesson</span>
+            <p>
+              Push correctness as early in the pipeline as it will go. A constraint the
+              editor enforces costs a designer five seconds; the same constraint discovered
+              in production costs a patch cycle.
+            </p>
+          </blockquote>
+        </section>
+
+        <section id="pipeline">
+          <h2>Taking myself out of the loop</h2>
+          <p>
+            The pipeline work is the part I'm proudest of, and it's the least visible. Before
+            it, adding a weapon part meant a round trip through me: import the mesh, set
+            compression, assign materials, wire the prefab, register it in a manifest, hook
+            up the store entry. Six manual steps, each individually forgettable.
+          </p>
+          <p>After, the artist drops a mesh into a watched folder and the tooling:</p>
+          <ol>
+            <li>Applies the import settings for its category — compression, mip behaviour, read/write flags.</li>
+            <li>Generates the prefab with sockets bound from the mesh's named transforms.</li>
+            <li>Registers the part in the manifest and its addressable group.</li>
+            <li>Runs the validation pass and reports what's wrong in plain language.</li>
+          </ol>
+          <p>
+            What changed wasn't just my calendar. It changed <strong>who could iterate</strong>.
+            Art could try a part, see it in-game, and throw it away — the cost of an
+            experiment dropped far enough that people ran more of them.
+          </p>
+
+          <div class="draft-note">
+            <span class="label">Draft — add the before/after</span>
+            <p>
+              Put a number on this. "Adding a part went from about 30 minutes of programmer
+              time to under 2 minutes of artist time" — or whatever it truly was. This is
+              the single most persuasive line on the page for a software engineering
+              interviewer, because it's automation with a measurable business effect.
+            </p>
+          </div>
+        </section>
+
+        <section id="ab">
+          <h2>An A/B harness design could drive</h2>
+          <p>
+            The studio needed to test monetisation and progression changes without shipping a
+            build per hypothesis. I built the experiment layer to sit behind remote config, so
+            variants are <strong>data, not branches</strong>: a value is read through the
+            experiment service, which resolves it against the user's assigned bucket and falls
+            back to the shipped default if anything is unreachable.
+          </p>
+          <p>Non-negotiables, learned the hard way:</p>
+          <ul>
+            <li>
+              <strong>Deterministic, sticky bucketing.</strong> Assignment hashes a stable user
+              ID, so a player never flips variant between sessions and skews the data.
+            </li>
+            <li>
+              <strong>Offline-safe defaults.</strong> If config can't be fetched, the game
+              plays the shipped values. An experiment framework that can break the game
+              offline is not shippable.
+            </li>
+            <li>
+              <strong>Variant recorded on every event.</strong> Otherwise you have results you
+              can't attribute, which is worse than no results.
+            </li>
+            <li>
+              <strong>A kill switch.</strong> Any experiment can be collapsed to control
+              remotely, without a store submission.
+            </li>
+          </ul>
+          <p>
+            The design goal was that <strong>I shouldn't be involved in running an
+            experiment.</strong> Design defined the variants and read the funnels themselves.
+          </p>
+        </section>
+
+        <section id="scale">
+          <h2>What 100K installs teaches you</h2>
+          <p>
+            A six-figure install base surfaces things a test device never will. Device
+            fragmentation is the obvious one — a working build on twenty phones is not a
+            working build on twenty thousand. The subtler lessons:
+          </p>
+          <ul>
+            <li>
+              <strong>Crash triage is a skill, not an afterthought.</strong> Grouping by device
+              tier and OS version turns a wall of stack traces into two or three actual bugs.
+            </li>
+            <li>
+              <strong>Save data has to survive your own mistakes.</strong> Migration paths and
+              defensive deserialisation, because a schema change that wipes progress is
+              unrecoverable reputationally.
+            </li>
+            <li>
+              <strong>Store metadata is engineering-adjacent.</strong> Build size affects
+              install conversion. That makes asset budgets a business concern, not a
+              programmer's preference.
+            </li>
+          </ul>
+        </section>
+
+        <section id="tradeoffs">
+          <h2>Trade-offs &amp; regrets</h2>
+          <ul>
+            <li>
+              <strong>The validation pass ran at build time, not on save.</strong> Correct
+              place, wrong moment — feedback arrived minutes after the mistake instead of
+              seconds. I'd wire it into asset post-processing now.
+            </li>
+            <li>
+              <strong>The experiment layer had no analysis surface.</strong> I built clean
+              assignment and clean event tagging, then left interpretation to spreadsheets.
+              A thin results view would have paid for itself in a fortnight.
+            </li>
+            <li>
+              <strong>The offset data was authored, and authored data drifts.</strong> Deriving
+              mount offsets from mesh sockets directly would have removed a whole class of
+              "looks slightly wrong" bugs that we instead caught by eye.
+            </li>
+          </ul>
+        </section>
+
+        <section id="gallery">
+          <h2>Gallery</h2>
+          <ul class="shots shots--wide">
+            <li><img src="../assets/games/gun-builder-elite-2/01.jpg" alt="Weapon assembly view with parts list" loading="lazy"></li>
+            <li><img src="../assets/games/gun-builder-elite-2/02.jpg" alt="Part customisation interface" loading="lazy"></li>
+            <li><img src="../assets/games/gun-builder-elite-2/03.jpg" alt="Shooting range mode" loading="lazy"></li>
+            <li><img src="../assets/games/gun-builder-elite-2/04.jpg" alt="Finish and attachment selection" loading="lazy"></li>
+          </ul>
+        </section>
+
+        <div class="next-study">
+          <p>
+            <strong>Holding 60fps with a screen full of horde</strong>
+            Performance budgeting on sub-$150 Android hardware.
+          </p>
+          <a class="btn btn--primary" href="ether-survivors.html">
+            Next case study
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+
+      </article>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cta">
+      <p class="eyebrow">Contact</p>
+      <h2>Want the longer version?</h2>
+      <p>Happy to go deeper on the pipeline design or the experiment infrastructure.</p>
+      <ul class="contact-list">
+        <li><a class="btn btn--primary" href="mailto:ewewin1995@hotmail.com">ewewin1995@hotmail.com</a></li>
+        <li><a class="btn" href="../index.html#work">All work</a></li>
+      </ul>
+    </div>
+    <div class="footer-base">
+      <p>&copy; <span data-year>2026</span> Ewe Win Lim · Kuala Lumpur, Malaysia</p>
+      <p><a href="../index.html">Back to portfolio</a></p>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js" defer></script>
+</body>
+</html>

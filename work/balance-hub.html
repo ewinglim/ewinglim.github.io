@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balance Hub — editor tooling case study | Ewe Win Lim</title>
+<meta name="description" content="A custom Unity EditorWindow that put every designer-owned number behind one interface, validated the build against its own design brief, and made missing content a list instead of a runtime surprise.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../css/style.css">
+<style>:root { --card-accent: #b8a6f7; }</style>
+<script>document.documentElement.classList.add("js")</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html">Ewe Win Lim <span>/ Ewing</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu">
+      <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="../index.html#work">Work</a>
+      <a href="../index.html#studies" aria-current="page">Case studies</a>
+      <a href="../index.html#engineering">Engineering</a>
+      <a href="../index.html#about">About</a>
+      <a class="btn nav-cta" href="../index.html#contact">Get in touch</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="study-hero">
+    <div class="wrap">
+      <a class="crumb" href="../index.html#studies">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>
+        All case studies
+      </a>
+
+      <div class="study-hero-top">
+        <div>
+          <p class="role">Unity editor tooling · internal</p>
+          <h1>Balance Hub — one window for everything a designer owns</h1>
+        </div>
+      </div>
+
+      <p class="lede">
+        Every free-to-play project I have worked on has the same quiet problem: the
+        numbers that decide whether the game is any good are scattered across dozens of
+        assets, and nobody can tell you the state of the build without opening all of
+        them. Balance Hub is my answer to that — <strong>a single editor window that
+        owns the whole authoring surface and reports what is still wrong before anyone
+        presses Play.</strong>
+      </p>
+
+      <dl class="factbar">
+        <div><dt>Pages</dt><dd>10</dd></div>
+        <div><dt>Config assets</dt><dd>8 ScriptableObjects</dd></div>
+        <div><dt>Surface</dt><dd>Custom <code>EditorWindow</code></dd></div>
+        <div><dt>Users</dt><dd>Designers, not programmers</dd></div>
+        <div><dt>Engine</dt><dd>Unity</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="section">
+    <div class="wrap study-layout">
+
+      <aside class="study-aside">
+        <div class="side-card">
+          <h3>On this page</h3>
+          <ul class="toc">
+            <li><a href="#problem">The problem it solves</a></li>
+            <li><a href="#shape">One window, ten pages</a></li>
+            <li><a href="#absence">Making absence visible</a></li>
+            <li><a href="#intent">Encoding the design brief</a></li>
+            <li><a href="#limits">Naming what it cannot do</a></li>
+            <li><a href="#transfer">Why this is not a games skill</a></li>
+            <li><a href="#tradeoffs">Trade-offs &amp; regrets</a></li>
+            <li><a href="#shot">The window</a></li>
+          </ul>
+        </div>
+        <div class="side-card">
+          <h3>Stack</h3>
+          <ul class="tags">
+            <li>Unity Editor API</li><li>C#</li><li>ScriptableObjects</li>
+            <li>Custom inspectors</li><li>Asset validation</li><li>Serialization</li>
+          </ul>
+        </div>
+        <div class="side-card">
+          <h3>Note</h3>
+          <p style="font-size:.86rem;color:var(--text-dim)">
+            The project name is redacted in the screenshot. The tool, the architecture
+            and the problems are otherwise exactly as built.
+          </p>
+        </div>
+      </aside>
+
+      <article class="study-content">
+
+        <section id="problem">
+          <h2>The problem it solves</h2>
+          <p>
+            A data-driven game is a good idea that decays. You start with a couple of
+            <code>ScriptableObject</code> configs so designers can tune values without a
+            rebuild, which works. Then the project grows, and eighteen months later the
+            numbers that define the game live in forty assets across six folders, each
+            edited through Unity's default inspector, with no relationship between them
+            that anyone can see.
+          </p>
+          <p>Three concrete costs, all of which I have paid:</p>
+          <ul>
+            <li>
+              <strong>Nobody knows the state of the build.</strong> "Is the round the right
+              length?" requires opening five assets and doing arithmetic. So the question
+              gets asked once a month instead of once a day.
+            </li>
+            <li>
+              <strong>Missing content is invisible until it fails.</strong> Code asks for a
+              sound by id. No clip is mapped. Nothing errors — it just plays silence, and
+              you find out in a playtest, or you don't.
+            </li>
+            <li>
+              <strong>Designers ask programmers for permission.</strong> Not because the data
+              is locked, but because the default inspector gives no confidence that a change
+              is safe. So changes queue behind whoever wrote the system.
+            </li>
+          </ul>
+          <p>
+            Balance Hub attacks all three with the same move: <strong>put the whole
+            authoring surface in one place, and make that place opinionated about
+            correctness.</strong>
+          </p>
+        </section>
+
+        <section id="shape">
+          <h2>One window, ten pages</h2>
+          <p>
+            The window is a left-hand page list and a content area — round balance, score
+            model, ingredients, audio, art, prefabs, motion, UI copy, and a build page,
+            with an overview page in front of them all. Ten pages, eight underlying config
+            assets, one search box.
+          </p>
+          <p>
+            The important design choice is that a page is not a special case in a growing
+            <code>switch</code>. Each page is a self-contained object that declares its own
+            title, draws its own body and reports its own problems. Adding a page is adding
+            a class, and the shell has no knowledge of what any page contains.
+          </p>
+
+          <p class="code-label">The page abstraction</p>
+<pre><code>public interface IHubPage
+{
+    string Title { get; }
+    void Draw();                              // its own editing UI
+    IEnumerable&lt;Issue&gt; Validate();            // what it thinks is wrong
+}
+
+// The shell knows only the interface. It draws the sidebar, routes the
+// selection, and asks every page the same question for the overview.
+public sealed class BalanceHubWindow : EditorWindow
+{
+    private readonly List&lt;IHubPage&gt; _pages = new();
+    private int _selected;
+
+    private void OnGUI()
+    {
+        DrawSidebar(_pages, ref _selected);
+        _pages[_selected].Draw();
+    }
+
+    // The overview page is not special-cased either — it is the union of
+    // every page's own validation.
+    public IEnumerable&lt;Issue&gt; AllIssues() =&gt; _pages.SelectMany(p =&gt; p.Validate());
+}</code></pre>
+
+          <p>
+            That last method is the whole reason the overview page can exist. The summary
+            is not a separate hand-maintained checklist that drifts out of date — it is
+            derived, every time it is drawn, from the same validation each page already
+            runs for itself. There is no second source of truth to forget to update.
+          </p>
+
+          <div class="draft-note">
+            <span class="label">Draft — confirm the specifics</span>
+            <p>
+              Say whether this is IMGUI or UI Toolkit, and why you picked it. If pages are
+              registered by reflection or attribute rather than a hand-built list, that's
+              worth a sentence — it's the difference between "extensible" and "extensible
+              without editing the shell".
+            </p>
+          </div>
+        </section>
+
+        <section id="absence">
+          <h2>Making absence visible</h2>
+          <p>
+            This is the part I would keep in every tool I ever write again. Most validation
+            checks that a value is <em>wrong</em>. The harder and more valuable check is
+            that a value is <em>not there at all</em>, because absence has no field to
+            inspect and throws no error.
+          </p>
+          <p>The overview's audit table answers four questions of that shape:</p>
+          <ul>
+            <li>
+              <strong>Which sounds does the code ask for that have no clip?</strong> Twenty-five
+              effects and three music tracks, at the time of that screenshot. The consequence
+              is spelled out in the row: the game is silent until they land.
+            </li>
+            <li>
+              <strong>Which prefab ids can code request that have no row?</strong> Three. A
+              lookup that will return nothing, with no compile-time hint that it can.
+            </li>
+            <li>
+              <strong>Which effects still point at placeholder art?</strong> Five, found by
+              the <code>PH_</code> naming convention — a cheap, ugly, completely effective
+              heuristic.
+            </li>
+            <li>
+              <strong>Which mixer groups don't exist?</strong> Covered below, because the
+              answer is more interesting than a count.
+            </li>
+          </ul>
+          <p>
+            Each row states an area, a state and a consequence in plain language. Not a
+            log line, not an error code — a sentence a designer or producer can read and
+            act on. <strong>The audit is written for the person who has to care about it,
+            not the person who wrote it.</strong>
+          </p>
+
+          <blockquote class="callout">
+            <span class="label">The generalisable idea</span>
+            <p>
+              Enumerate what the code can ask for, enumerate what the data provides, and
+              show the difference. Almost every integration bug I have chased was
+              somewhere in that gap, and the gap is nearly always computable.
+            </p>
+          </blockquote>
+        </section>
+
+        <section id="intent">
+          <h2>Encoding the design brief</h2>
+          <p>
+            The overview does not just print the round timing. It sums the phases, compares
+            the total against the target the design is supposed to hit, and colours the line
+            amber when it misses.
+          </p>
+          <p>
+            In the screenshot the round runs 28.9–30.9 seconds against a target of about
+            twenty-five. The tool is telling on the build — and that is the point. The
+            timing was never secretly wrong; it was <em>knowably</em> wrong, and before this
+            existed the only way to know was to add up five numbers by hand and remember
+            what the target was.
+          </p>
+          <p>
+            A tool that stores the design intent alongside the data stops the intent from
+            living only in someone's memory or a document nobody reopens. A number being
+            present is not the same as a number being right, and only one of those two
+            things the default inspector can tell you.
+          </p>
+        </section>
+
+        <section id="limits">
+          <h2>Naming what it cannot do</h2>
+          <p>
+            Unity exposes no scripting API for creating audio mixer groups. They have to be
+            authored by hand in the mixer asset. There is no way to automate it, and no way
+            for the tool to fix it.
+          </p>
+          <p>So the tool says so, in the audit, as its own row:</p>
+          <blockquote class="callout">
+            <span class="label">The row, verbatim</span>
+            <p>
+              <em>no mixer groups</em> — the mixer has to be authored by hand; Unity has no
+              scripting API for mixer groups. Without it, mute does nothing.
+            </p>
+          </blockquote>
+          <p>
+            Three things are doing work there. It states the gap, it explains
+            <em>why</em> the gap cannot be closed automatically so nobody files it as a tool
+            bug, and it names the user-visible consequence so the priority is obvious.
+          </p>
+          <p>
+            The tempting alternative is to leave it out, because it isn't something the tool
+            can act on. That's how you get a green dashboard on a broken build.
+            <strong>A checklist that only lists what it can automate teaches people to
+            trust it exactly as far as it doesn't matter.</strong>
+          </p>
+        </section>
+
+        <section id="transfer">
+          <h2>Why this is not a games skill</h2>
+          <p>
+            Strip the vocabulary and Balance Hub is an internal admin tool over a typed data
+            store, with schema validation, referential-integrity checking and a health
+            dashboard derived from the same rules. Swap the nouns and it is a CMS admin
+            panel, a feature-flag console, or an ops runbook page.
+          </p>
+          <p>The four ideas I would carry into any of those unchanged:</p>
+          <ol>
+            <li>
+              <strong>Enforce invariants at write time, not read time.</strong> A constraint
+              the authoring UI checks costs someone five seconds. The same constraint
+              discovered in production costs a release.
+            </li>
+            <li>
+              <strong>Treat absence as a first-class query.</strong> Dangling references and
+              unmapped keys are the most common class of integration failure and the easiest
+              to enumerate. Almost nobody enumerates them.
+            </li>
+            <li>
+              <strong>Derive the summary; never maintain one.</strong> Any status view
+              assembled by hand is wrong within a fortnight.
+            </li>
+            <li>
+              <strong>Write for the reader, and include what you can't fix.</strong> The
+              audience for a health check is the person who has to make a decision, not the
+              person who wrote the check.
+            </li>
+          </ol>
+          <p>
+            None of that is Unity-specific. It is the difference between shipping a data
+            layer and shipping a data layer somebody else can safely operate.
+          </p>
+        </section>
+
+        <section id="tradeoffs">
+          <h2>Trade-offs &amp; regrets</h2>
+          <ul>
+            <li>
+              <strong>The audit runs when you press Re-check, not continuously.</strong>
+              That was a deliberate choice — validating every config on every repaint is
+              slow enough to make the window unpleasant — but it means the overview can be
+              stale without saying so. A timestamp on the panel would have cost me ten
+              minutes.
+            </li>
+            <li>
+              <strong>Nothing blocks a build.</strong> The tool reports; it does not enforce.
+              Wiring the same <code>Validate()</code> calls into a pre-build step would turn
+              advice into a guarantee, and I would do that first on the next one.
+            </li>
+            <li>
+              <strong>One window is a bottleneck as well as a feature.</strong> Everything
+              routing through a single surface is exactly why it's useful, and also why every
+              new system wants to add a page. Without a rule about what deserves one, this
+              becomes the place where all the mess accumulates.
+            </li>
+            <li>
+              <strong><code>PH_</code> prefix matching is a convention, not a constraint.</strong>
+              It works until someone names a real asset badly. A proper flag on the asset
+              would be correct; the naming heuristic was expedient and I shipped it anyway.
+            </li>
+          </ul>
+        </section>
+
+        <section id="shot">
+          <h2>The window</h2>
+          <p>
+            The overview page: round summary at the top, the audit table beneath it, and the
+            eight config assets the window edits at the bottom, so the data behind every
+            page is one click away.
+          </p>
+          <ul class="shots shots--wide">
+            <li>
+              <a href="../assets/tools/balance-hub-overview.png" target="_blank" rel="noopener">
+                <img src="../assets/tools/balance-hub-overview.png"
+                     alt="The Balance Hub editor window. A sidebar lists ten pages — Overview, Round Balance, Score Model, Ingredients, Audio, Art, Prefabs, Motion, UI Copy, Kiosk Build. The Overview page shows the round running 28.9 to 30.9 seconds against a target of about 25, highlighted amber, then the phase breakdown and scoring rules. Below, a table headed What is still missing lists four rows across audio, prefabs and visual effects, each with an area, a state and a plain-language consequence. At the bottom, the eight configuration assets the window edits."
+                     width="1103" height="629" loading="lazy">
+              </a>
+            </li>
+          </ul>
+          <p style="font-size:.88rem;color:var(--text-faint)">
+            Project name redacted. Everything else is as built.
+          </p>
+        </section>
+
+        <div class="next-study">
+          <p>
+            <strong>500 parts, one designer, no programmer in the loop</strong>
+            The same philosophy applied to a 100K-install title.
+          </p>
+          <a class="btn btn--primary" href="gun-builder-elite-2.html">
+            Next case study
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+
+      </article>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cta">
+      <p class="eyebrow">Contact</p>
+      <h2>Want the longer version?</h2>
+      <p>
+        This is the work I most want to be doing more of. Happy to go deep on tooling
+        architecture, validation design, or what I'd build differently now.
+      </p>
+      <ul class="contact-list">
+        <li><a class="btn btn--primary" href="mailto:ewewin1995@hotmail.com">ewewin1995@hotmail.com</a></li>
+        <li><a class="btn" href="../index.html#work">All work</a></li>
+      </ul>
+    </div>
+    <div class="footer-base">
+      <p>&copy; <span data-year>2026</span> Ewe Win Lim · Kuala Lumpur, Malaysia</p>
+      <p><a href="../index.html">Back to portfolio</a></p>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js" defer></script>
+</body>
+</html>

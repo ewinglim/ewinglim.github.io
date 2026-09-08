@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ether Survivors: Last Stand — case study | Ewe Win Lim</title>
+<meta name="description" content="Three player-controlled heroes, hundreds of enemies, runtime rune composition — and a frame budget set by sub-$150 Android hardware.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../css/style.css">
+<style>:root { --card-accent: #e0a341; }</style>
+<script>document.documentElement.classList.add("js")</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html">Ewe Win Lim <span>/ Ewing</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu">
+      <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="../index.html#work">Work</a>
+      <a href="../index.html#studies" aria-current="page">Case studies</a>
+      <a href="../index.html#engineering">Engineering</a>
+      <a href="../index.html#about">About</a>
+      <a class="btn nav-cta" href="../index.html#contact">Get in touch</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="study-hero">
+    <div class="wrap">
+      <a class="crumb" href="../index.html#studies">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>
+        All case studies
+      </a>
+
+      <div class="study-hero-top">
+        <img src="../assets/games/ether-survivors/icon.jpg" alt="" width="256" height="256">
+        <div>
+          <p class="role">Gempak Games · Senior Unity Developer</p>
+          <h1>Ether Survivors: Last Stand</h1>
+        </div>
+      </div>
+
+      <p class="lede">
+        A horde survivor where the player drives <strong>three heroes at once</strong>,
+        sockets runes into them mid-run, and fuses their abilities into screen-clearing
+        combos. Every one of those features multiplies the number of things alive on
+        screen — on a device class where the frame budget is already spent.
+      </p>
+
+      <dl class="factbar">
+        <div><dt>Platform</dt><dd>Android</dd></div>
+        <div><dt>Released</dt><dd>September 2026</dd></div>
+        <div><dt>Installs</dt><dd>1,000+</dd></div>
+        <div><dt>Engine</dt><dd>Unity · URP</dd></div>
+        <div><dt>My role</dt><dd>Systems &amp; performance</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="section">
+    <div class="wrap study-layout">
+
+      <aside class="study-aside">
+        <div class="side-card">
+          <h3>On this page</h3>
+          <ul class="toc">
+            <li><a href="#brief">The brief</a></li>
+            <li><a href="#constraint">The real constraint</a></li>
+            <li><a href="#runes">Composing runes at runtime</a></li>
+            <li><a href="#horde">Making the horde cheap</a></li>
+            <li><a href="#fusion">Three heroes, one input</a></li>
+            <li><a href="#measure">What I measured</a></li>
+            <li><a href="#tradeoffs">Trade-offs &amp; regrets</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+          </ul>
+        </div>
+        <div class="side-card">
+          <h3>Stack</h3>
+          <ul class="tags">
+            <li>Unity</li><li>C#</li><li>URP</li><li>ScriptableObjects</li>
+            <li>Object pooling</li><li>Addressables</li><li>Unity Profiler</li>
+          </ul>
+        </div>
+        <a class="btn" href="https://play.google.com/store/apps/details?id=com.gempakgames.ethersurvivorslaststand" target="_blank" rel="noopener">
+          View on Google Play
+        </a>
+      </aside>
+
+      <article class="study-content">
+
+        <section id="brief">
+          <h2>The brief</h2>
+          <p>
+            The horde survivor genre had settled into a formula: one character, auto-attack,
+            pick an upgrade every level. We wanted to keep the dopamine of that loop but
+            give the player something to actually <em>do</em> with their hands, and
+            something to think about between runs.
+          </p>
+          <p>Three design pillars came out of that, and each one is an engineering problem:</p>
+          <ul>
+            <li><strong>A three-hero squad</strong> under simultaneous control, not a single avatar.</li>
+            <li><strong>Runes that socket mid-run</strong>, dropping from combat and slotting into any hero immediately.</li>
+            <li><strong>Fusion combos</strong> that combine two heroes' abilities into a third, larger effect.</li>
+          </ul>
+          <p>
+            Each pillar multiplies state. Three heroes means three times the projectiles and
+            VFX. Runes mean stat blocks are no longer static. Fusion means abilities have to
+            know about each other. And the target device was the low end of Android, because
+            that's where the audience is.
+          </p>
+        </section>
+
+        <section id="constraint">
+          <h2>The real constraint</h2>
+          <p>
+            The obvious framing is "make the game run fast." The more useful framing turned
+            out to be: <strong>the frame budget is a fixed pot, and every design pillar wants
+            to spend from it.</strong> So instead of optimising reactively, I started by
+            assigning each subsystem a millisecond allowance and treating an overrun as a
+            build failure rather than a polish task.
+          </p>
+
+          <blockquote class="callout">
+            <span class="label">Principle</span>
+            <p>
+              A performance budget that isn't enforced automatically is a wish. The point
+              isn't the number — it's that overrunning it becomes visible on the day it
+              happens, not during the pre-launch panic.
+            </p>
+          </blockquote>
+
+          <div class="draft-note">
+            <span class="label">Draft — add your real numbers</span>
+            <p>
+              Fill in the actual target (device model, resolution, target frame rate) and the
+              per-subsystem budgets you settled on. Concrete numbers here are what make an
+              interviewer believe the rest of the page.
+            </p>
+          </div>
+        </section>
+
+        <section id="runes">
+          <h2>Composing runes at runtime</h2>
+          <p>
+            Runes drop during combat and socket into a hero immediately, so a hero's effective
+            stats change many times per run. The naive version — recalculate a stat block
+            whenever anything asks for a value — allocates and thrashes. The version that
+            works treats stats as a <strong>layered composition that is only rebuilt when its
+            inputs actually change</strong>.
+          </p>
+          <p>
+            Rune definitions live in <code>ScriptableObject</code> assets, so design can author
+            and rebalance them without touching code and without a rebuild. Each rune
+            contributes modifiers to a named stat; the hero holds a dirty flag and recomposes
+            its cached block only when a socket changes.
+          </p>
+
+          <p class="code-label">Shape of the system</p>
+<pre><code>// Runes are authored as assets, not code.
+[CreateAssetMenu(menuName = "Ether/Rune")]
+public sealed class RuneDefinition : ScriptableObject
+{
+    public StatModifier[] Modifiers;   // additive + multiplicative, per stat
+    public AbilityTag[]   GrantedTags; // what fusion rules can key off
+}
+
+// Hero stats are a cached composition, rebuilt only on change.
+public sealed class StatBlock
+{
+    private readonly float[] _cached = new float[StatIds.Count];
+    private bool _dirty = true;
+
+    public void Socket(RuneDefinition rune) { /* ... */ _dirty = true; }
+
+    public float Get(StatId id)
+    {
+        if (_dirty) Recompose();   // no per-query allocation
+        return _cached[(int)id];
+    }
+}</code></pre>
+
+          <p>
+            Two properties mattered more than elegance here. Stat reads happen thousands of
+            times a frame, so <code>Get</code> had to be allocation-free and cheap. And because
+            fusion rules key off tags rather than concrete rune types, design could add a rune
+            that participates in existing combos without anyone writing a new branch.
+          </p>
+        </section>
+
+        <section id="horde">
+          <h2>Making the horde cheap</h2>
+          <p>
+            Hundreds of enemies, their projectiles, their death VFX and their damage numbers
+            all want to exist at once. Three things did most of the work:
+          </p>
+          <ol>
+            <li>
+              <strong>Everything is pooled.</strong> Enemies, projectiles, hit effects and
+              floating text come from pre-warmed pools sized to the worst case for the wave,
+              so a difficulty spike never triggers a burst of instantiation and a GC spike
+              mid-fight.
+            </li>
+            <li>
+              <strong>Rendering is batched by design, not by luck.</strong> Enemy variants
+              share atlases and material setups so the whole horde collapses into a small
+              number of draw calls. Art constraints were agreed with the studios up front —
+              cheaper than fixing it in code later.
+            </li>
+            <li>
+              <strong>Not everything updates every frame.</strong> Distant and off-screen
+              behaviour runs on a slower tick, and expensive decisions are spread across
+              frames rather than all recomputed on the same one.
+            </li>
+          </ol>
+
+          <div class="draft-note">
+            <span class="label">Draft — your call</span>
+            <p>
+              If you used the Job System, Burst, GPU instancing or a custom spatial hash for
+              target acquisition, say so explicitly here and name the win. If you kept it to
+              plain pooled MonoBehaviours, say <em>that</em> — deliberately choosing the
+              simpler thing and knowing why reads as senior, not junior.
+            </p>
+          </div>
+        </section>
+
+        <section id="fusion">
+          <h2>Three heroes, one input</h2>
+          <p>
+            Controlling three characters with one thumb is a design problem before it's a
+            technical one. The resolution was to make the player responsible for
+            <strong>positioning and timing</strong> and let the heroes handle target selection:
+            the squad moves as a formation, and abilities fire on their own logic. That keeps
+            the input surface small enough for a phone while leaving genuine decisions —
+            where to stand, when to trigger a fusion, which hero to feed a rune to.
+          </p>
+          <p>
+            Fusion is a rules layer on top of the ability system rather than special-cased
+            code. Each ability publishes tags; a fusion rule declares the tag pair it consumes
+            and the composite effect it produces. Adding a combo is authoring an asset, not
+            editing a switch statement — which is what made it survive weeks of balance
+            iteration without rotting.
+          </p>
+        </section>
+
+        <section id="measure">
+          <h2>What I measured</h2>
+          <p>
+            Performance work is worthless without instrumentation, and so is game design.
+            Both got telemetry:
+          </p>
+          <ul>
+            <li><strong>Frame time by subsystem</strong>, captured on real devices rather than in-editor.</li>
+            <li><strong>Run length and death causes</strong>, to find where the difficulty curve actually broke.</li>
+            <li><strong>Rune pick rates</strong>, which surfaced the dead options design suspected but couldn't prove.</li>
+            <li><strong>Crash and ANR rates</strong> segmented by device tier, so low-end regressions were visible immediately.</li>
+          </ul>
+
+          <div class="draft-note">
+            <span class="label">Draft — highest-value section to fill</span>
+            <p>
+              One before/after number does more here than three paragraphs of architecture.
+              Something like "median frame time on a Redmi 9A went from X ms to Y ms" or
+              "rune pick-rate data killed four of twenty-eight runes in the first week."
+              Whatever you actually have.
+            </p>
+          </div>
+        </section>
+
+        <section id="tradeoffs">
+          <h2>Trade-offs &amp; regrets</h2>
+          <p>Things I'd argue for differently on the next one:</p>
+          <ul>
+            <li>
+              <strong>The stat composition layer earned its complexity; the fusion tag system
+              nearly didn't.</strong> Tags are the right model, but I built more generality than
+              the shipped combo count justified. Two concrete combos and a hard-coded rule
+              would have shipped sooner and taught us the same thing.
+            </li>
+            <li>
+              <strong>Pool sizing was hand-tuned per wave.</strong> It works, but it's a
+              maintenance cost every time design touches a wave. Deriving pool sizes from the
+              wave definition itself was the right call and I deferred it.
+            </li>
+            <li>
+              <strong>I profiled on device late.</strong> The editor profiler is not the target
+              hardware and never was. Cheap lesson to learn early, expensive to learn in week
+              ten.
+            </li>
+          </ul>
+        </section>
+
+        <section id="gallery">
+          <h2>Gallery</h2>
+          <ul class="shots">
+            <li><img src="../assets/games/ether-survivors/01.jpg" alt="Horde combat with the three-hero squad" loading="lazy"></li>
+            <li><img src="../assets/games/ether-survivors/02.jpg" alt="Hero draft and upgrade selection screen" loading="lazy"></li>
+            <li><img src="../assets/games/ether-survivors/03.jpg" alt="Fusion combo clearing the screen" loading="lazy"></li>
+            <li><img src="../assets/games/ether-survivors/05.jpg" alt="Rune socketing interface" loading="lazy"></li>
+            <li><img src="../assets/games/ether-survivors/06.jpg" alt="Boss encounter" loading="lazy"></li>
+            <li><img src="../assets/games/ether-survivors/07.jpg" alt="Squad progression screen" loading="lazy"></li>
+          </ul>
+        </section>
+
+        <div class="next-study">
+          <p>
+            <strong>One framework, four titles, eighteen days</strong>
+            The shared Ether codebase this game was built on.
+          </p>
+          <a class="btn btn--primary" href="heroes-of-etheria.html">
+            Next case study
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+
+      </article>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cta">
+      <p class="eyebrow">Contact</p>
+      <h2>Want the longer version?</h2>
+      <p>Happy to go deeper on any of this — architecture, profiling method, or what the telemetry actually said.</p>
+      <ul class="contact-list">
+        <li><a class="btn btn--primary" href="mailto:ewewin1995@hotmail.com">ewewin1995@hotmail.com</a></li>
+        <li><a class="btn" href="../index.html#work">All work</a></li>
+      </ul>
+    </div>
+    <div class="footer-base">
+      <p>&copy; <span data-year>2026</span> Ewe Win Lim · Kuala Lumpur, Malaysia</p>
+      <p><a href="../index.html">Back to portfolio</a></p>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js" defer></script>
+</body>
+</html>
