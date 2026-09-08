@@ -1,8 +1,8 @@
 /* ==========================================================================
-   Ewe Win Lim — portfolio
-   Hand-written CSS. No framework, no build step.
+   ewinglim.github.io — stylesheet
+   Single file, no preprocessor, no build step.
    Sections: 1 tokens · 2 reset · 3 layout · 4 header · 5 hero · 6 work grid
-             8 case studies · 9 capabilities · 10 about · 11 footer · 12 motion
+             7 case studies · 8 capabilities · 9 about · 10 footer · 11 motion
    ========================================================================== */
 
 /* ---------- 1. tokens ---------- */
@@ -855,19 +855,6 @@ blockquote.callout .label {
   color: var(--card-accent, var(--accent));
 }
 
-/* draft note — visible only until Ewing fills the section in */
-.draft-note {
-  padding: 1rem 1.2rem;
-  border: 1px dashed var(--warn);
-  border-radius: 10px;
-  background: rgba(251,191,36,.06);
-}
-.draft-note p { color: #fde68a; font-size: .88rem; }
-.draft-note .label {
-  display: block; margin-bottom: .35rem;
-  font: 600 .7rem/1 var(--font-mono);
-  letter-spacing: .1em; text-transform: uppercase; color: var(--warn);
-}
 
 pre {
   margin: 0; padding: 1.15rem 1.25rem;
