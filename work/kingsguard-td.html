@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kingsguard TD — server-authoritative backend case study | Ewe Win Lim</title>
+<meta name="description" content="The backend and live-ops layer under Kingsguard TD: a Unity Gaming Services backend where the server owns every player's progress, the client and server share one rule book, and the game still feels instant on a bad connection.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../css/style.css">
+<style>:root { --card-accent: #86d07b; }</style>
+<script>document.documentElement.classList.add("js")</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html">Ewe Win Lim <span>/ Ewing</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu">
+      <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="../index.html#work">Work</a>
+      <a href="../index.html#studies" aria-current="page">Case studies</a>
+      <a href="../index.html#engineering">Engineering</a>
+      <a href="../index.html#about">About</a>
+      <a class="btn nav-cta" href="../index.html#contact">Get in touch</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="study-hero">
+    <div class="wrap">
+      <a class="crumb" href="../index.html#studies">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>
+        All case studies
+      </a>
+
+      <div class="study-hero-top">
+        <div>
+          <p class="role">Backend &amp; live-ops · Gempak Games · in closed testing</p>
+          <h1>Kingsguard TD — a server that owns progress, and a game that still feels instant</h1>
+        </div>
+      </div>
+
+      <p class="lede">
+        Kingsguard TD started life with its progress in <code>PlayerPrefs</code> on the
+        phone. That stops being acceptable once a game has a gacha, an energy timer,
+        rewarded ads and in-app purchases, because anything the phone stores the player
+        can edit, and any roll the phone makes can be re-rolled by killing the app. My
+        part has been the layer underneath the game: <strong>a backend where the server
+        owns every player's progress, the client and server run the same rules, and
+        balance can change without an app update.</strong>
+      </p>
+
+      <dl class="factbar">
+        <div><dt>Status</dt><dd>Closed testing · Android &amp; iOS</dd></div>
+        <div><dt>Server</dt><dd>UGS Cloud Code · C# / .NET</dd></div>
+        <div><dt>Player save</dt><dd>1 per player · server-write only</dd></div>
+        <div><dt>Environments</dt><dd>dev · uat · production</dd></div>
+        <div><dt>Server tests</dt><dd>290+ · no Unity needed</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="section">
+    <div class="wrap study-layout">
+
+      <aside class="study-aside">
+        <div class="side-card">
+          <h3>On this page</h3>
+          <ul class="toc">
+            <li><a href="#problem">Why the server owns progress</a></li>
+            <li><a href="#rulebook">One rule book, two compilers</a></li>
+            <li><a href="#pipeline">Every call takes the same path</a></li>
+            <li><a href="#battles">Battles that survive a dead signal</a></li>
+            <li><a href="#instant">Making a server game feel instant</a></li>
+            <li><a href="#liveops">Live-ops without an app update</a></li>
+            <li><a href="#money">Purchases and ads, checked server-side</a></li>
+            <li><a href="#accounts">Accounts, privacy and store rules</a></li>
+            <li><a href="#shipping">Builds on every push</a></li>
+            <li><a href="#transfer">Why this is not a games skill</a></li>
+            <li><a href="#tradeoffs">Trade-offs &amp; what isn't done</a></li>
+          </ul>
+        </div>
+        <div class="side-card">
+          <h3>Stack</h3>
+          <ul class="tags">
+            <li>Unity Gaming Services</li><li>Cloud Code (C#)</li><li>Cloud Save</li>
+            <li>Authentication</li><li>.NET 9</li><li>NUnit</li><li>UGS CLI</li>
+            <li>Unity IAP</li><li>LevelPlay</li><li>GitHub Actions</li>
+          </ul>
+        </div>
+        <div class="side-card">
+          <h3>Note</h3>
+          <p style="font-size:.86rem;color:var(--text-dim)">
+            Kingsguard TD hasn't launched, so nothing here is a production metric — the
+            numbers are test counts and design values. The game's design (shop, retention
+            and idle-reward specs) is the designer's and producer's; the backend, the
+            protocol, the client integration, the tooling and the build pipeline are mine.
+            Code blocks are sketches of the shape, not the production source.
+          </p>
+        </div>
+      </aside>
+
+      <article class="study-content">
+
+        <section id="problem">
+          <h2>Why the server owns progress</h2>
+          <p>
+            The decision that everything else follows from: <strong>the phone is never
+            trusted with balances, unlocks or items.</strong> Every change to a player's
+            progress is a command the server runs, and the screens read the server's
+            answer.
+          </p>
+          <ul>
+            <li>
+              <strong>One save per player, in Cloud Save's protected slot.</strong> The
+              phone can read it; only the server can write it. That's enforced by an access
+              policy deployed as config, not by convention — a player writing to Cloud Save
+              directly gets a 403, which I checked against the real service.
+            </li>
+            <li>
+              <strong>A fresh, versioned schema with stable ids.</strong> Stages and items
+              get permanent ids instead of file names or list positions, so a designer
+              reordering a list can never corrupt a save. Anything derivable is derived —
+              "highest stage cleared" is computed from stage records, never stored.
+            </li>
+            <li>
+              <strong>One active device at a time.</strong> Boot claims the session; a call
+              from another phone gets "Playing on another device" and a PLAY HERE button.
+              Never an automatic takeover.
+            </li>
+          </ul>
+        </section>
+
+        <section id="rulebook">
+          <h2>One rule book, two compilers</h2>
+          <p>
+            The obvious way to build this is to write every rule twice: once in the game,
+            so a button knows whether you can afford the upgrade, and once on the server,
+            which actually charges you. That gives you two implementations that must agree
+            forever, and they won't.
+          </p>
+          <p>
+            Instead, every rule that changes progress is plain C# in an assembly marked
+            <code>noEngineReferences</code> — the compiler refuses <code>UnityEngine</code>.
+            The same source files compile into the Unity client and, linked by the server
+            project, into the Cloud Code module. The language is pinned to C# 9, because
+            Unity's compiler is the lower bound.
+          </p>
+
+          <p class="code-label">The contract every rule keeps</p>
+<pre><code>// Engine-free, C# 9. Compiled into the client AND the Cloud Code module.
+public static class WallRules
+{
+    // In: the save, the numbers file, a seeded random if it rolls.
+    // Out: a value, or an error code. Never an exception, never a partial write.
+    public static Result&lt;Upgrade&gt; Upgrade(PlayerSave save, Numbers n)
+    {
+        int cost = n.Wall.CostAt(save.WallLevel);
+        if (save.Gold &lt; cost)
+            return Error.NotEnoughCurrency;   // a refusal changes nothing
+
+        save.Gold -= cost;
+        save.WallLevel++;
+        return new Upgrade(save.WallLevel, cost);
+    }
+}</code></pre>
+
+          <p>
+            Because a refused rule changes nothing, the server can answer a refusal without
+            writing. And because the maths have to match to the last bit, the rule book uses
+            Unity's rounding (halves to even) and the game's float summation order.
+          </p>
+          <p>
+            The server tests run with <code>dotnet test</code> — no Unity, no cloud. The ones
+            I lean on hardest are invariant tests: six seeds × 1,500 random actions — valid,
+            refused and <em>forged</em> — and after every single step, no balance is
+            negative, every id is unique, every cap holds, and a refused action left the
+            save untouched.
+          </p>
+
+          <blockquote class="callout">
+            <span class="label">A bug that only exists across two runtimes</span>
+            <p>
+              Mono writes a float as <code>0.450000018</code>; .NET writes the same float as
+              <code>0.45000002</code>. Both read back to identical bits, so values were never
+              wrong — but any comparison of the numbers file as <em>text</em> would disagree.
+              The fingerprint that tells client and server they hold the same numbers hashes
+              float bits, never strings.
+            </p>
+          </blockquote>
+        </section>
+
+        <section id="pipeline">
+          <h2>Every call takes the same path</h2>
+          <p>
+            One request pipeline runs in three hosts: the deployed Cloud Code module, a
+            local test server inside the Unity Editor, and the test suite. So the thing I
+            test is the thing that ships.
+          </p>
+
+          <p class="code-label">The pipeline, in shape</p>
+<pre><code>public async Task&lt;Response&gt; Handle(Request req)
+{
+    var doc = await store.Read(req.PlayerId);   // save + revision + session + recent answers
+
+    var gate = Gate(req, doc);                  // maintenance · app too old ·
+    if (gate != Status.Ok) return Refuse(gate); // another device · numbers changed
+
+    if (doc.Answered(req.RequestId, out var earlier))
+        return earlier;                         // a resend is never applied twice
+
+    for (int attempt = 0; attempt &lt; 3; attempt++)
+    {
+        var result = game.Execute(req.Command, doc.Save, numbers, rng);
+        if (!result.Ok) return Rejected(result.Error);      // nothing written
+
+        if (await store.TryWrite(doc, expected: doc.Revision))
+            return Ok(result, PatchSince(req.KnownRevision, doc));
+
+        doc = await store.Read(req.PlayerId);   // someone wrote first: re-read, redo
+    }
+    return ServerError();
+}</code></pre>
+
+          <p>
+            The property that makes the client simple is the request id. <strong>Resending
+            the same request after any failure is always safe</strong>, so the client's
+            RETRY button doesn't need to know whether the first attempt landed. A timeout,
+            a dropped connection, a server error — the answer is the same: send it again.
+          </p>
+          <p>
+            The local test server is the same pipeline saving to a readable JSON file, and
+            it can simulate latency and being offline. To prove the two hosts really are the
+            same, I ran an identical eleven-command script through the in-process pipeline
+            and through the deployed module as a fresh guest: the two saves came out
+            identical apart from one timestamp.
+          </p>
+        </section>
+
+        <section id="battles">
+          <h2>Battles that survive a dead signal</h2>
+          <p>
+            A battle is the one thing that can't stop to wait for the server. So it is
+            split in two:
+          </p>
+          <ol>
+            <li>
+              <strong>Start</strong> — sent while the hero draft is on screen. The server
+              checks the stage is open, charges energy, and <em>rolls the drop plan</em>:
+              which enemies carry shards, which chests hold runes.
+            </li>
+            <li>
+              <strong>Finish</strong> — the client reports only what happened: outcome, wave
+              reached, the wall's HP, which planned drops were collected. The server pays
+              every reward from its own plan.
+            </li>
+          </ol>
+          <p>
+            The server then checks the report: the run exists and is unsettled (a repeat
+            returns the stored result), it arrived within 72 hours, the wave fits the stage,
+            the HP is between 0 and 1, and every chest the client claims was one the server
+            planned. Forged reports are refused and logged with the player id.
+          </p>
+          <p>
+            The result goes into an <strong>outbox</strong> — written to a file
+            <em>before</em> it's sent, so it survives the connection dropping and the app
+            being killed, and it's delivered exactly once: now, before the next call, or by
+            the next launch. With no signal, the result screen says "Rewards arrive when you
+            reconnect" and the player moves on. No retry screen between a player and the
+            next battle.
+          </p>
+          <p>
+            Energy runs on the same principle. The save stores only the amount and when the
+            refill clock started; the refill itself is computed from <em>server</em> time,
+            so changing the phone's clock changes nothing. A battle whose result never
+            arrives gives its energy back.
+          </p>
+          <p>
+            One edge needed its own design. Cloud Code shuts an idle module down, and the
+            first call after that can take 13–15 seconds. A brand-new player can't stare at
+            that, so on first launch the phone runs the shared start rule on a new save,
+            lets them straight into Stage 1, and queues the start in the outbox under the
+            same run id — the server learns about the battle before its result arrives.
+          </p>
+        </section>
+
+        <section id="instant">
+          <h2>Making a server game feel instant</h2>
+          <p>
+            Server authority has a cost the player feels: every upgrade tap is a round trip.
+            So for the upgrade screens, artifacts and every rune action, the client now
+            <strong>runs the command itself, through the very command table the server
+            runs</strong>, on a copy of the save. It shows the result immediately, writes the
+            request to the outbox, and tells the server in the background. If the server
+            refuses, the action quietly rolls back.
+          </p>
+          <p>
+            The client keeps two copies of the save: <em>confirmed</em>, the server's last
+            answer, and <em>shown</em>, the confirmed copy with the waiting actions replayed
+            on top. Screens read the shown copy, so a correct prediction refreshes nothing
+            twice.
+          </p>
+          <p>
+            The hard part is randomness — you can't predict a roll you don't hold. So the
+            server keeps <strong>dice decided ahead</strong> in the save: a small stock of
+            seeds per kind of roll (one per hero for mastery draws, one for rune merges, one
+            for rerolls), topped back up to three after every successful command. The client
+            can show three rolls of a kind before the server answers; a fourth waits. Rolls
+            that must never be guessable — gacha pulls, chests — refuse to be predicted and
+            take the normal blocking path.
+          </p>
+          <p>
+            Proof, not hope: random-walk tests play thousands of steps and, after
+            <em>every</em> instant action — about 7,600 of them — require the client's
+            prediction to equal the server's exactly: the same accept-or-refuse code, the
+            same result, and the same save apart from the server's dice top-up — and a
+            refusal must leave both copies byte-identical. In the Editor, with two seconds of simulated
+            latency, the upgrade screen answers a tap in 36 ms.
+          </p>
+          <blockquote class="callout">
+            <span class="label">The trade-off I signed off on</span>
+            <p>
+              A player who reads their own save can see — not change — their next roll of
+              each kind. For a single-player progression game that's an acceptable price for
+              taps that never wait. For a competitive game it wouldn't be.
+            </p>
+          </blockquote>
+        </section>
+
+        <section id="liveops">
+          <h2>Live-ops without an app update</h2>
+          <p>
+            Designers keep tuning in <code>ScriptableObject</code>s, which stay the source of
+            truth. One button exports every number the server needs into a single file, with
+            a SHA-256 fingerprint; the Cloud Code module embeds that file, so code and numbers
+            always deploy together. The export refuses on anything that would make a number
+            wrong — an unwired source, a duplicate id, an unreadable field. A renamed field
+            becomes a listed problem, never a silent zero.
+          </p>
+          <p>
+            At boot the client sends the fingerprint it holds. If the server's differs, the
+            answer carries the new numbers; the client takes them before the save that came
+            with them, writes them into its own assets, and caches them for next launch. I
+            rehearsed it end to end: energy cap 30 → 40 and a wall upgrade cost 100 → 160
+            reached the screens with no new build.
+          </p>
+          <p>What runs on that foundation, all of it server-authoritative:</p>
+          <ul>
+            <li>
+              <strong>Server switches per environment</strong> — maintenance mode with a
+              message, and a minimum client version that answers "update required".
+            </li>
+            <li>
+              <strong>Retention systems</strong> — daily login, a daily spin, daily and
+              weekly missions with point chests, and a seven-day event. The server picks the
+              spin segment by weight; the wheel only animates onto the answer. Battle stats
+              that feed missions are clamped against caps scaled by battle length on the
+              server clock — clamped, never refused, so a good run is never punished.
+            </li>
+            <li>
+              <strong>Idle rewards</strong> — earnings accrue on the server clock with a cap;
+              rune rewards are rolled from a seed stored with the pile, so the preview the
+              player sees is exactly what CLAIM pays.
+            </li>
+            <li>
+              <strong>One game clock for every reset</strong> — the daily and weekly reset,
+              daylight saving included, worked out in plain arithmetic rather than
+              <code>TimeZoneInfo</code>, because time-zone databases differ between the
+              Editor, phones and the Linux host. Tests pin the reset across both DST
+              switches.
+            </li>
+            <li>
+              <strong>Deploys from inside Unity</strong> — a Deploy button in the designers'
+              Balance Hub refuses while the numbers file is stale, runs the server tests
+              first, then deploys with the UGS CLI. Production asks twice, and only the
+              producer deploys there.
+            </li>
+          </ul>
+        </section>
+
+        <section id="money">
+          <h2>Purchases and ads, checked server-side</h2>
+          <ul>
+            <li>
+              <strong>Purchases are verified by the server, not the client.</strong> Google
+              purchases are checked with the Play Developer API; Apple's signed transactions
+              are verified offline against a pinned Apple root certificate. Each purchase
+              carries the buyer's player tag, so one receipt can't be redeemed on several
+              accounts.
+            </li>
+            <li>
+              <strong>Granting is a server-only command.</strong> Only the purchase endpoint
+              can issue it; an app that sends it directly is refused. A transaction pays
+              once, and a repeat returns "already paid".
+            </li>
+            <li>
+              <strong>A verified purchase is never refused.</strong> Shop rules are checked
+              <em>before</em> the store's pay screen. If a paid item can't be applied after
+              all, the player gets a fallback instead of losing money to a rule. Every
+              verified purchase is written to a refund index before it is paid — if that
+              write fails, nothing is paid, and the client only finishes the store
+              transaction once the grant has succeeded.
+            </li>
+            <li>
+              <strong>A tool keeps the stores honest.</strong> One product list feeds the
+              game, the server and both stores, through a .NET tool that checks and pushes
+              products to Google Play and App Store Connect, and never deletes anything.
+            </li>
+            <li>
+              <strong>Rewarded ads on LevelPlay, capped by the server.</strong> The phone
+              claims the reward; the server enforces the daily limits. The server can't
+              prove an ad really played — the docs say so rather than pretend — so ad
+              rewards are capped per day instead of trusted.
+            </li>
+          </ul>
+          <p>
+            Status, plainly: the shop's server foundation is built and tested — offers,
+            passes and a season clock — but there's no shop screen yet and every product is
+            off sale. Live receipt checking is waiting on a store service-account key, and
+            the ad network accounts aren't live yet.
+          </p>
+        </section>
+
+        <section id="accounts">
+          <h2>Accounts, privacy and store rules</h2>
+          <ul>
+            <li>
+              <strong>Guest first, then link.</strong> Google Play Games on Android, Sign in
+              with Apple on iPhone. Game Center is next.
+            </li>
+            <li>
+              <strong>Linking never switches silently.</strong> If the account being linked
+              already has a save from another phone, the client previews it — a read-only
+              call that doesn't claim the other phone's session — then asks: keep this phone,
+              or load that save, with a second confirmation before anything is lost.
+            </li>
+            <li>
+              <strong>Delete my data, end to end.</strong> The server deletes the save,
+              analytics deletion is requested, local queues are cleared, and the sign-in
+              account goes last. UGS doesn't revoke Sign in with Apple tokens, which App Store
+              review requires, so the module does it itself: it signs a short-lived ES256
+              client secret, trades the authorization code, and revokes the token. A failed
+              revoke never blocks the deletion, and no code, token or key is ever logged.
+            </li>
+            <li>
+              <strong>Consent before collection.</strong> Nothing is sent before the player
+              agrees, declining is exactly as easy as accepting, and I removed Firebase from
+              the new app because it collected at launch, before anyone was asked.
+            </li>
+          </ul>
+        </section>
+
+        <section id="shipping">
+          <h2>Builds on every push</h2>
+          <p>
+            The game ships through a CI/CD pipeline I built on GitHub Actions, running on
+            the team's own Windows PC and Mac. Every push to the <code>uat</code> branch
+            builds Android and iOS against the matching server environment, uploads to Google
+            Play internal testing and TestFlight with the next free build number, and posts
+            the result to the team. It uses no paid CI minutes — we moved to self-hosted
+            runners after the hosted budget ran out.
+          </p>
+          <p>
+            The three environments matter more than they look. Developer cheats are server
+            commands that only <code>dev</code> accepts; <code>uat</code> refuses them exactly
+            like production. So QA plays the game players will get, not a debug build with
+            the edges sanded off.
+          </p>
+        </section>
+
+        <section id="transfer">
+          <h2>Why this is not a games skill</h2>
+          <p>
+            Take the vocabulary out and this is a transactional backend with an unreliable
+            mobile client — the same checklist as a wallet or a booking app:
+          </p>
+          <ol>
+            <li>
+              <strong>Idempotency keys</strong>, so retries are safe by construction rather
+              than by careful timing.
+            </li>
+            <li>
+              <strong>Optimistic concurrency</strong> on a versioned document, with bounded
+              retries.
+            </li>
+            <li>
+              <strong>An outbox</strong> for at-least-once delivery, made exactly-once by
+              server-side dedupe.
+            </li>
+            <li>
+              <strong>Shared domain logic</strong> between client and server, enforced by the
+              compiler, and <strong>invariant testing</strong> with forged inputs.
+            </li>
+            <li>
+              <strong>Config as code across environments</strong>, with a kill switch,
+              minimum-version gating and a deploy that runs the tests first.
+            </li>
+            <li>
+              <strong>Consent and deletion</strong> treated as features with an order of
+              operations, not as a settings page.
+            </li>
+          </ol>
+        </section>
+
+        <section id="tradeoffs">
+          <h2>Trade-offs &amp; what isn't done</h2>
+          <ul>
+            <li>
+              <strong>It hasn't met real traffic.</strong> The game is in closed testing.
+              There are no load numbers, and the first production deploy is the producer's
+              call.
+            </li>
+            <li>
+              <strong>Numbers deploy with code, not Remote Config.</strong> That keeps a
+              balance change atomic with the rules that read it, but every tuning change is a
+              deploy. Remote Config is the planned next step.
+            </li>
+            <li>
+              <strong>One save document holds everything</strong> — no separate economy
+              service. Every command is one atomic write and the invariants are easy to state;
+              the cost is a document that grows and is rewritten on every command. Caps on
+              stored battle history keep it bounded for now.
+            </li>
+            <li>
+              <strong>Cold starts are worked around, not fixed.</strong> Letting a new player
+              play ahead hides the 13–15 second wake-up; a returning player can still see
+              "Connecting…".
+            </li>
+            <li>
+              <strong>The minimum-time-per-wave check is off.</strong> It's built, but the
+              threshold is a design decision that hasn't been made, so a plausible-but-fast
+              forged result is currently accepted.
+            </li>
+            <li>
+              <strong>Some pieces wait on keys, not code.</strong> Apple token revocation and
+              live Google receipt checks are built and tested against fakes, but need store
+              secrets in the server's secret store before they run for real.
+            </li>
+          </ul>
+        </section>
+
+        <section id="shot">
+          <h2>The architecture</h2>
+          <ul class="shots shots--wide">
+            <li>
+              <a href="../assets/games/kingsguard-td/cover.svg" target="_blank" rel="noopener">
+                <img src="../assets/games/kingsguard-td/cover.svg"
+                     alt="Architecture diagram. The phone runs the rule book to predict answers and keeps an outbox that survives a dropped signal. Commands go to a Cloud Code module in C#, which runs the same rule book, checks every command, de-duplicates requests, writes under an optimistic lock and has a maintenance switch. It stores one versioned save per player in Cloud Save's protected slot, which only the server can write. Footer: dev, uat and production environments; 290+ server tests; live tuning without an app update."
+                     width="1200" height="750" loading="lazy">
+              </a>
+            </li>
+          </ul>
+          <p style="font-size:.88rem;color:var(--text-faint)">
+            Game art isn't shown because the game hasn't launched.
+          </p>
+        </section>
+
+        <div class="next-study">
+          <p>
+            <strong>One window for everything a designer owns</strong>
+            Editor tooling that keeps designers out of the programmer queue.
+          </p>
+          <a class="btn btn--primary" href="balance-hub.html">
+            Next case study
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+
+      </article>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cta">
+      <p class="eyebrow">Contact</p>
+      <h2>Want the longer version?</h2>
+      <p>
+        Happy to go deep on any of it — the request pipeline, client prediction, the test
+        strategy, or what I'd change before launch.
+      </p>
+      <ul class="contact-list">
+        <li><a class="btn btn--primary" href="mailto:ewewin1995@hotmail.com">ewewin1995@hotmail.com</a></li>
+        <li><a class="btn" href="../index.html#work">All work</a></li>
+      </ul>
+    </div>
+    <div class="footer-base">
+      <p>&copy; <span data-year>2026</span> Ewe Win Lim · Kuala Lumpur, Malaysia</p>
+      <p><a href="../index.html">Back to portfolio</a></p>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js" defer></script>
+</body>
+</html>

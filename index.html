@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ewe Win Lim — Senior Unity Developer</title>
-<meta name="description" content="Senior Unity developer in Kuala Lumpur. Ten shipped mobile titles on iOS and Android — gameplay systems, editor tooling, live-ops and release pipelines.">
+<meta name="description" content="Senior Unity developer in Kuala Lumpur. Ten shipped mobile titles on iOS and Android — gameplay systems, editor tooling, server backends, live-ops and release pipelines.">
 <meta name="author" content="Ewe Win Lim">
 
 <!-- Open Graph / social preview -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Ewe Win Lim — Senior Unity Developer">
-<meta property="og:description" content="Ten shipped mobile titles on iOS and Android. Gameplay systems, editor tooling, live-ops and release pipelines.">
+<meta property="og:description" content="Ten shipped mobile titles on iOS and Android. Gameplay systems, editor tooling, server backends, live-ops and release pipelines.">
 <meta property="og:image" content="https://ewinglim.github.io/assets/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:url" content="https://ewinglim.github.io/">
@@ -60,9 +60,10 @@
       <p class="lede">
         Senior Unity developer based in Kuala Lumpur, seven years across iOS and Android.
         I work at the layer where gameplay meets infrastructure: <strong>combat and
-        progression systems, editor tooling, analytics, live-ops and the release
+        progression systems, editor tooling, server backends, live-ops and the release
         pipeline</strong>. Currently holding technical direction at Gempak Games, where
-        six titles have shipped under my code pipeline.
+        six titles have shipped under my code pipeline — and building the
+        server-authoritative backend under the next one, Kingsguard TD.
       </p>
 
       <div class="hero-actions">
@@ -106,10 +107,11 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow">Shipped work</p>
-        <h2>Twelve titles, three studios, seven years</h2>
+        <h2>Thirteen titles, three studios, seven years</h2>
         <p class="lede">
           Everything here I wrote production code for. Ten of them shipped to the iOS
-          and Android stores; store links go straight to the live listing. Three older
+          and Android stores, and one is in closed testing; store links go straight to
+          the live listing. Three older
           Lifebelt titles have since been delisted by the publisher, and I've marked
           those rather than leaving you a dead link.
         </p>
@@ -121,11 +123,40 @@
         <button type="button" data-filter="lifebelt" aria-pressed="false">Lifebelt Games</button>
         <button type="button" data-filter="gamelobb" aria-pressed="false">Gamelobb</button>
         <button type="button" data-filter="personal" aria-pressed="false">Personal</button>
-        <span class="count" data-count>12 of 12 shown</span>
+        <span class="count" data-count>13 of 13 shown</span>
       </div>
       <p class="visually-hidden" id="filter-status" role="status" aria-live="polite"></p>
 
       <ul class="grid">
+
+        <!-- Kingsguard TD (closed testing — no store links or game art until launch) -->
+        <li class="card card--study" data-studio="gempak" style="--card-accent:#86d07b" data-reveal>
+          <div class="card-media">
+            <img src="assets/games/kingsguard-td/cover.svg" alt="Kingsguard TD backend architecture — the phone and a Cloud Code module run the same rule book, and one server-written save per player lives in Cloud Save" loading="lazy" width="1200" height="750">
+            <span class="card-flag">Closed testing</span>
+          </div>
+          <div class="card-body">
+            <h3><a href="work/kingsguard-td.html">Kingsguard TD — Heroes &amp; Magic</a></h3>
+            <p class="card-meta">
+              <span>Hero tower defence</span>
+              <span class="metric">Backend &amp; live-ops</span>
+              <span>iOS &amp; Android</span>
+            </p>
+            <p>
+              Gempak's next title, now in closed testing. I built the layer underneath it:
+              a server-authoritative backend on Unity Gaming Services, where a C# Cloud
+              Code module runs the same rule book as the client — plus the live-ops on
+              top: retention events, idle rewards, server-checked purchases and ads, and
+              balance changes without an app update.
+            </p>
+            <ul class="tags">
+              <li>UGS Cloud Code</li><li>Server authority</li><li>Live-ops</li><li>CI/CD</li>
+            </ul>
+            <p class="card-links">
+              <a href="work/kingsguard-td.html">Read the case study</a>
+            </p>
+          </div>
+        </li>
 
         <!-- Gun Builder ELITE 2 -->
         <li class="card card--study" data-studio="lifebelt" style="--card-accent:#8ab0d0" data-reveal>
@@ -466,7 +497,7 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow">Case studies</p>
-        <h2>Four problems worth writing up</h2>
+        <h2>Five problems worth writing up</h2>
         <p class="lede">
           Screenshots show what shipped. These show how it was built — the constraint,
           the architecture I chose, what I measured, and what I'd do differently.
@@ -474,6 +505,30 @@
       </div>
 
       <ul class="studies">
+
+        <li class="study" style="--card-accent:#86d07b" data-reveal>
+          <div class="study-media study-media--ui">
+            <img src="assets/games/kingsguard-td/cover.svg" alt="Architecture diagram: the phone and a Cloud Code module run the same rule book; one versioned save per player lives in Cloud Save, written only by the server" loading="lazy">
+          </div>
+          <div class="study-body">
+            <p class="eyebrow" style="color:var(--card-accent)">Backend &amp; live-ops</p>
+            <h3><a href="work/kingsguard-td.html">A server that owns progress, and a game that still feels instant</a></h3>
+            <p>
+              The Unity Gaming Services backend under Kingsguard TD: the phone is never
+              trusted with a balance, yet upgrades answer in milliseconds and a battle
+              result survives the app being killed.
+            </p>
+            <ul class="study-points">
+              <li><strong>One rule book</strong> compiled into both the client and the server</li>
+              <li><strong>Idempotent requests and an outbox</strong> — a retry is always safe</li>
+              <li><strong>Client prediction</strong> proven equal to the server over ~7,600 random actions</li>
+            </ul>
+            <a class="study-more" href="work/kingsguard-td.html">
+              Read the case study
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+        </li>
 
         <li class="study" style="--card-accent:#b8a6f7" data-reveal>
           <div class="study-media study-media--ui">
@@ -608,7 +663,7 @@
           <ul>
             <li>Custom Unity editor windows and inspectors</li>
             <li>Art asset pipelines and automated import rules</li>
-            <li>Build automation and store submission</li>
+            <li>CI/CD on GitHub Actions — Play and TestFlight on every push</li>
             <li>Content validation that fails loudly, early</li>
             <li>Addressables and asset-size budgets</li>
           </ul>
@@ -617,14 +672,15 @@
         <div class="cap" data-reveal>
           <h3>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3v18h18M7 15l3-4 3 3 5-7"/></svg>
-            Data &amp; live-ops
+            Backend &amp; live-ops
           </h3>
           <ul>
-            <li>Game analytics instrumentation and funnels</li>
-            <li>A/B testing frameworks and remote config</li>
-            <li>REST API integration and backend contracts</li>
+            <li>Server-authoritative backends on Unity Gaming Services</li>
+            <li>Idempotent, offline-tolerant client–server protocols</li>
+            <li>Retention systems — daily rewards, missions, timed events</li>
+            <li>Server-side purchase checks and ad reward limits</li>
+            <li>Analytics funnels, A/B tests and remote config</li>
             <li>Crash triage and live incident response</li>
-            <li>Retention and monetisation experiment design</li>
           </ul>
         </div>
 
@@ -757,6 +813,10 @@
             pipeline end to end. Six titles have shipped under it, four of them inside
             eighteen days in late 2026 — which was only possible because of a shared
             framework we invested in up front rather than four codebases in parallel.
+            Since October 2026 I've been building the layer under our next title,
+            <em>Kingsguard TD</em>: a Unity Gaming Services backend where the server owns
+            every player's progress, the live-ops systems that run on it, and a CI/CD
+            pipeline that puts a build in testers' hands on every push.
           </p>
           <p>
             Before that, three and a half years at <strong>Lifebelt Games</strong>, where
@@ -812,6 +872,7 @@
           <ul class="tags">
             <li>Unity</li><li>C#</li><li>URP</li><li>Shader Graph</li>
             <li>Addressables</li><li>Netcode for GameObjects</li><li>Photon</li>
+            <li>Unity Gaming Services</li><li>.NET</li><li>GitHub Actions</li>
             <li>Firebase</li><li>REST</li><li>Git</li><li>iOS</li><li>Android</li>
           </ul>
 

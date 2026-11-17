@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750" role="img" aria-labelledby="t d">
+  <title id="t">Kingsguard TD backend architecture</title>
+  <desc id="d">The phone runs the game's rule book to predict answers and queues commands in an outbox. A Cloud Code module runs the same rule book and checks every command. One versioned save per player lives in Cloud Save, written only by the server.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".035" stroke-width="1"/>
+    </pattern>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 10 5 0 10z" fill="#86d07b"/>
+    </marker>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#86d07b" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#86d07b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="750" fill="#0f1218"/>
+  <rect width="1200" height="750" fill="url(#grid)"/>
+  <circle cx="600" cy="300" r="460" fill="url(#glow)"/>
+
+  <text x="60" y="96" font-family="Consolas, 'JetBrains Mono', Menlo, monospace" font-size="26" letter-spacing="3" fill="#86d07b">KINGSGUARD TD · SERVER-AUTHORITATIVE</text>
+
+  <!-- boxes -->
+  <g fill="#161b23" stroke="#ffffff" stroke-opacity=".16" stroke-width="2">
+    <rect x="60"  y="170" width="290" height="270" rx="18"/>
+    <rect x="425" y="150" width="350" height="310" rx="18" stroke="#86d07b" stroke-opacity=".75"/>
+    <rect x="850" y="170" width="290" height="270" rx="18"/>
+  </g>
+
+  <g font-family="Consolas, 'JetBrains Mono', Menlo, monospace" font-size="22" letter-spacing="2" fill="#7c8698">
+    <text x="88"  y="218">PHONE</text>
+    <text x="453" y="198" fill="#86d07b">CLOUD CODE · C#</text>
+    <text x="878" y="218">CLOUD SAVE</text>
+  </g>
+
+  <g font-family="'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif" fill="#e9ecf2" font-weight="600" font-size="38">
+    <text x="88"  y="272">Rule book</text>
+    <text x="453" y="252">Same rule book</text>
+    <text x="878" y="272">One save</text>
+  </g>
+
+  <g font-family="'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif" fill="#a4adbe" font-size="25">
+    <text x="88" y="326">predicts the answer</text>
+    <text x="88" y="364">outbox survives</text>
+    <text x="88" y="398">a dropped signal</text>
+
+    <text x="453" y="306">checks every command</text>
+    <text x="453" y="344">idempotent requests</text>
+    <text x="453" y="382">optimistic write lock</text>
+    <text x="453" y="420">maintenance switch</text>
+
+    <text x="878" y="326">versioned schema</text>
+    <text x="878" y="364">protected slot:</text>
+    <text x="878" y="398">server-write only</text>
+  </g>
+
+  <!-- arrows: command out, answer back -->
+  <g stroke="#86d07b" stroke-width="3" fill="none">
+    <path d="M356 278H418" marker-end="url(#arr)"/>
+    <path d="M418 330H356" marker-end="url(#arr)" stroke-opacity=".55"/>
+    <path d="M781 278H843" marker-end="url(#arr)"/>
+    <path d="M843 330H781" marker-end="url(#arr)" stroke-opacity=".55"/>
+  </g>
+
+  <!-- footer chips -->
+  <g font-family="Consolas, 'JetBrains Mono', Menlo, monospace" font-size="23" fill="#a4adbe">
+    <rect x="60"  y="520" width="348" height="54" rx="10" fill="#161b23" stroke="#ffffff" stroke-opacity=".12"/>
+    <text x="82"  y="555">dev · uat · production</text>
+    <rect x="428" y="520" width="279" height="54" rx="10" fill="#161b23" stroke="#ffffff" stroke-opacity=".12"/>
+    <text x="450" y="555">290+ server tests</text>
+    <rect x="727" y="520" width="413" height="54" rx="10" fill="#161b23" stroke="#ffffff" stroke-opacity=".12"/>
+    <text x="749" y="555">live tuning, no app update</text>
+  </g>
+</svg>

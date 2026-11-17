@@ -1,6 +1,6 @@
 # ewinglim.github.io
 
-My portfolio — twelve shipped mobile titles and four technical case studies.
+My portfolio — thirteen mobile titles (ten shipped, one in closed testing) and five technical case studies.
 
 **Live:** https://ewinglim.github.io
 
@@ -12,6 +12,7 @@ dependencies. Clone it and open `index.html` and it works.
 ```
 index.html                     single-page portfolio
 work/
+  kingsguard-td.html           case study — server-authoritative backend and live-ops
   balance-hub.html             case study — editor tooling
   ether-survivors.html         case study — performance budgeting
   gun-builder-elite-2.html     case study — modular systems, A/B, pipeline

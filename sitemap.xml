@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://ewinglim.github.io/</loc><priority>1.0</priority></url>
+  <url><loc>https://ewinglim.github.io/work/kingsguard-td.html</loc><priority>0.8</priority></url>
   <url><loc>https://ewinglim.github.io/work/balance-hub.html</loc><priority>0.8</priority></url>
   <url><loc>https://ewinglim.github.io/work/ether-survivors.html</loc><priority>0.8</priority></url>
   <url><loc>https://ewinglim.github.io/work/gun-builder-elite-2.html</loc><priority>0.8</priority></url>
